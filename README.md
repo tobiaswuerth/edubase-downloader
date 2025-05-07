@@ -3,8 +3,9 @@ Backup/Download your (bought!) Edubase books to PDFs, because nobody likes propr
 
 ## Setup
 ```bash
-git clone https://github.com/rtfmkiesel/edubase-downloader
-# a venv is recommended
+git clone https://github.com/tobiaswuerth/edubase-downloader.git
+py -m venv .venv
+.\.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
