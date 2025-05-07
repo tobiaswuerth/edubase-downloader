@@ -15,8 +15,8 @@ pip install -r requirements.txt
 - download and setup https://github.com/UB-Mannheim/tesseract/wiki
 - add installation directory to system environment variable ``PATH`` (to let it access ``tesseract.exe``)
 - open link https://github.com/tesseract-ocr/tessdata/
-    - download the languages you intend to use (code is setup for  Deutsch and English)
-        - note: Code is setup for Deutsch and English, if you need something else, adjust the default in [ocr.py](edu/ocr.py)
+    - download the languages you intend to use:
+        - note: code is setup for Deutsch and English, if you need something else, adjust the default in [ocr.py](edu/ocr.py)
         - note: English is available by default, needs no additional download
         - `deu` for Deutsch, download [deu.traineddata](https://github.com/tesseract-ocr/tessdata/raw/refs/heads/main/deu.traineddata)  
     - put the files into the installation sub-directory `tessdata` (e.g. `\Tesseract-OCR\tessdata\deu.traineddata`)
