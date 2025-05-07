@@ -3,6 +3,7 @@ import re
 import os
 import asyncio
 import argparse
+import yaml
 from pypdf import PdfWriter, PdfReader
 from playwright.async_api import async_playwright
 
@@ -174,34 +175,38 @@ if __name__ == "__main__":
 
     # parse the arguments
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-u", "--username", action="store", dest="username", default="")
-    parser.add_argument("-p", "--password", action="store", dest="password", default="")
+    parser.add_argument("-c", "--config", action="store", dest="config", default="config.yaml")
     parser.add_argument("-a", "--all", action="store_true", default=False)
     parser.add_argument("-s", "--show", action="store_true", default=True)
     parser.add_argument("-h", "--help", action="store_true", default=False)
     args = parser.parse_args()
 
     helptext = """usage: edubasedl.py [OPTIONS]
-
-Required:
--u, --username      Username (Email) of Edubase account
-
 Options:
--p, --password      Password (can be left empty, script will ask)
--c, --chrome-path   Path to the chrome/chromium binary
+-c, --config        Path to YAML config file with username/password (default: config.yaml)
 -a, --all           Will download all found books
 -s, --show          Show the action/open browser in front
 -h, --help          Prints this text
     """
+
+    print("[edubasedl]")
+    
+    # Try to load credentials from config file if it exists
+    if os.path.exists(args.config):
+        try:
+            with open(args.config, "r", encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+                args.username = config["username"]
+                args.password = config["password"]
+        except Exception as e:
+            print(f"[!] Error loading config file: {e}")
 
     # show help
     if args.help or args.username == "":
         print(helptext)
         exit()
 
-    print("[edubasedl]")
-
-    # user did not specify a password via argument, ask in interactive mode
+    # user did not specify a password via argument or config, ask in interactive mode
     if args.password == "":
         try:
             args.password = input("[?] Enter Edubase password: ")

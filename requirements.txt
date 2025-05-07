@@ -1,2 +1,3 @@
 pypdf
 pytest-playwright
+pyyaml
