@@ -1,3 +1,4 @@
 pypdf
 pytest-playwright
 pyyaml
+tqdm
