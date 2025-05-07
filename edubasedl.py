@@ -64,13 +64,8 @@ async def download_book(page, book_id):
 
 async def main(args):
     async with async_playwright() as p:
-        # custom chrome path if specified
-        launch_options = {"headless": not args.show}
-        if args.chromepath:
-            launch_options["executable_path"] = args.chromepath
-
         try:
-            browser = await p.chromium.launch(**launch_options)
+            browser = await p.chromium.launch(headless=False)
             context = await browser.new_context(user_agent=user_agent)
             page = await context.new_page()
         except Exception as e:
@@ -166,17 +161,23 @@ async def main(args):
             await browser.close()
             return
 
+def ensure_browsers_installed():
+    import subprocess
+    from playwright._impl._driver import compute_driver_executable, get_driver_env
+    driver_executable, driver_cli = compute_driver_executable()
+    completed_process = subprocess.run([driver_executable, driver_cli, "install", "chromium"], env=get_driver_env())
+    assert completed_process.returncode == 0, "Playwright failed to install the browsers"
+
 
 if __name__ == "__main__":
+    ensure_browsers_installed()
+
     # parse the arguments
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-u", "--username", action="store", dest="username", default="")
     parser.add_argument("-p", "--password", action="store", dest="password", default="")
-    parser.add_argument(
-        "-c", "--chrome-path", action="store", dest="chromepath", default=""
-    )
     parser.add_argument("-a", "--all", action="store_true", default=False)
-    parser.add_argument("-s", "--show", action="store_true", default=False)
+    parser.add_argument("-s", "--show", action="store_true", default=True)
     parser.add_argument("-h", "--help", action="store_true", default=False)
     args = parser.parse_args()
 
