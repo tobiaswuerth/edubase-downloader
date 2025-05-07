@@ -7,9 +7,16 @@ def main():
         with Edubase(creds) as edu:
             edu.login()
             edu.fetch_books()
-            edu.print_books()
-            edu.choose_book()
-            edu.download_book()
+
+            while True:
+                edu.print_books()
+                edu.choose_book()
+                edu.download_book()
+                edu.ocr_book()
+
+                if input("Download another book? (y/n): ").lower() != "y":
+                    break
+
     except KeyboardInterrupt:
         print("Operation cancelled by user")
     except Exception as e:
