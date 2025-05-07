@@ -1,7 +1,5 @@
 import io
 import os
-import signal
-import sys
 import time
 import re
 from playwright.sync_api import sync_playwright
@@ -9,6 +7,7 @@ from pypdf import PdfReader, PdfWriter
 from tqdm import trange
 
 from .credentials import Credentials
+from .ocr import ocr_pdf
 
 
 class Edubase:
@@ -18,24 +17,14 @@ class Edubase:
         self.browser = None
         self.page = None
 
-        self.setup_signal_handlers()
         self.ensure_browsers_installed()
 
         self.books = []
-        self.book_id = None
-
-    def setup_signal_handlers(self):
-        signal.signal(signal.SIGINT, self.signal_handler)
-        signal.signal(signal.SIGTERM, self.signal_handler)
-
-    def signal_handler(self, sig, frame):
-        print("\nReceived interrupt, cleaning up...")
-        self.cleanup()
-        sys.exit(0)
+        self.book_chosen = None
+        self.book_path = None
 
     def cleanup(self):
         if self.browser:
-            print("Closing browser...")
             try:
                 self.browser.close()
             except Exception:
@@ -74,6 +63,7 @@ class Edubase:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Cleanup...")
         self.cleanup()
 
     def login(self):
@@ -132,7 +122,7 @@ class Edubase:
                 print("Invalid input, please enter a number.")
 
             if 0 <= idx < len(self.books):
-                self.book_id = self.books[idx]["id"]
+                self.book_chosen = self.books[idx]
                 break
             else:
                 print("Invalid selection, please try again.")
@@ -141,13 +131,15 @@ class Edubase:
         out_dir = "downloads"
         os.makedirs(out_dir, exist_ok=True)
 
-        file_name = f"{self.book_id}.pdf"
+        id_ = self.book_chosen["id"]
+        name_cleaned = re.sub(r"[^a-zA-Z0-9öÖäÄüÜ]", "_", self.book_chosen["title"])
+        file_name = f"{id_}_{name_cleaned}.pdf"
         file_name = os.path.join(out_dir, file_name)
         assert not os.path.exists(file_name), f"File {file_name} already exists"
 
-        print(f"Downloading book {self.book_id} to {file_name}...")
+        print(f"Downloading book {id_} to {file_name}...")
         self.page.goto(
-            f"https://app.edubase.ch/#doc/{self.book_id}/1",
+            f"https://app.edubase.ch/#doc/{id_}/1",
             wait_until="networkidle",
         )
         time.sleep(0.5)
@@ -169,7 +161,7 @@ class Edubase:
         pdf = PdfWriter()
         for i in trange(1, max_pages + 1, desc="Downloading pages", unit="page"):
             self.page.goto(
-                f"https://app.edubase.ch/#doc/{self.book_id}/{i}",
+                f"https://app.edubase.ch/#doc/{id_}/{i}",
                 wait_until="networkidle",
             )
             time.sleep(0.5)
@@ -181,4 +173,8 @@ class Edubase:
         print(f"Saving {file_name}...")
         pdf.write(file_name)
         pdf.close()
-        print(f"Book {self.book_id} successfully downloaded to {file_name}")
+        print(f"Book {id_} successfully downloaded to {file_name}")
+        self.book_path = file_name
+
+    def ocr_book(self):
+        ocr_pdf(self.book_path)

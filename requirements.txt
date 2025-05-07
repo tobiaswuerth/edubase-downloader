@@ -2,3 +2,4 @@ pypdf
 pytest-playwright
 pyyaml
 tqdm
+ocrmypdf
