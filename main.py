@@ -1,5 +1,4 @@
-from edu.edubase import Edubase
-from edu.credentials import load_credentials
+from edu import Edubase, load_credentials
 
 
 def main():
