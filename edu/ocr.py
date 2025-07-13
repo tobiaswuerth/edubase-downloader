@@ -15,6 +15,7 @@ def ocr_pdf(in_path: str, lang="deu+eng") -> None:
             use_threads=False,
             jobs=max(1, os.cpu_count() - 2),
             progress_bar=True,
+            redo_ocr=True,
         )
 
         print(f"OCR complete: {out_path}")
